@@ -1,0 +1,15 @@
+#!/usr/bin/bpftrace
+//https://docs.huihoo.com/doxygen/linux/kernel/3.7/structtask__struct.html
+#include <linux/sched.h>
+
+
+BEGIN
+{
+	printf("comm\tpid\tppid\ttid\tduration\texitcode\tsignal\n");
+}
+
+t:sched:sched_process_exit
+{
+	$t = (struct task_struct *)curtask;
+	printf("%s\t%d\t%d\t%d\t%d\t%ld\t%d\n",comm,$t->tgid,$t->parent->tgid,pid,(nsecs-$t->start_time)/1000000,$t->exit_code>>8,$t->exit_code&127);
+}
